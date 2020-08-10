@@ -1,12 +1,9 @@
----
-title: "Laboratorio 1"
-author: "Sophia Gamarro"
-date: "8/9/2020"
-output: github_document
----
+Laboratorio 1
+================
+Sophia Gamarro
+8/9/2020
 
-
-```{librerias}
+``` librerias
 library(readxl)
 library(readr)
 library(tidyverse) 
@@ -15,8 +12,10 @@ library(dplyr)
 setwd("/Users/sophiagamarro/Documents/Semestre II 2020/Data Wrangling/Lab1")
 excel1<-read_excel('01-2018.xlsx')
 ```
+
 ## PROBLEMA 1
-```{documentos}
+
+``` documentos
 excel1<-read_excel('01-2018.xlsx')
 excel2<-read_excel('02-2018.xlsx')
 excel3<-read_excel('03-2018.xlsx')
@@ -30,7 +29,7 @@ excel10<-read_excel('10-2018.xlsx')
 excel11<-read_excel('11-2018.xlsx')
 ```
 
-```{fecha}
+``` fecha
 excel1$Fecha <- "01-2018"
 excel2$Fecha <- "01-2018"
 excel3$Fecha <- "01-2018"
@@ -44,17 +43,18 @@ excel10$Fecha <- "01-2018"
 excel11$Fecha <- "01-2018"
 ```
 
-```{fecha}
+``` fecha
 dataset<-dplyr::bind_rows(excel1,excel2, excel3, excel4, excel5, excel6, excel7, excel8, excel9, excel10, excel11)
 ```
-```{fecha}
+
+``` fecha
 write.csv(dataset,'dataset.csv')
 head(dataset)
 ```
 
 ## PROBLEMA 2
 
-```{fecha}
+``` fecha
 moda <- function(v) {
   uniqv <- unique(v)
   uniqv[which.max(tabulate(match(v, uniqv)))]
@@ -71,8 +71,7 @@ lapply(lista, moda)
 
 ## PROBLEMA 3
 
-```{fecha}
+``` fecha
 parque_vehicular<-read.delim("Parque.txt", header=T, sep="\t")
 head(parque_vehicular)
 ```
-
