@@ -38,7 +38,7 @@ paste0("Mis preguntas a resolver son: ",paste0(preguntas,collapse = ", "))
 
 1. Para las siguientes sentencias de `base R`, liste su contraparte de `dplyr`:
     * `str()` = tbl_df()
-    * `df[,c("a","b")]`= combine() 
+    * `df[,c("a","b")]`= select() 
     * `names(df)[4] <- "new_name"` donde la posición 4 corresponde a la variable `old_name` =  dplyr::   rename(tb, old name =new name )
     * `df[df$variable == "valor",]`
     
