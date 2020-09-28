@@ -1,0 +1,137 @@
+---
+title: "Laboratorio 5"
+author: "Sophia Gamarro"
+date: "9/27/2020"
+output: 
+  md_document: 
+    variant: markdown_github
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(lubridate)
+library(dplyr)
+library(readxl)
+library(nycflights13)
+library(DescTools)
+```
+
+### Sección 1: Predecir un eclipse solar
+
+En tiempo de Norte América, el eclipse total inició el 21 de agosto del 2017 a las 18:26:40.
+
+Este mismo evento, sucederá un Saros después.
+Un Saros equivale a 223 Synodic Months
+Un Synodic Month equivale a 29 días con 12 horas, con 44 minutos y 3 segundos.
+
+Con esta información, predecir el siguiente eclipse solar.
+
+Requisitos:
+●	Variable con la fecha del eclipse histórico.
+●	Variable que sea un Saros.
+●	Variable que sea un Synodic Month.
+●	La fecha del siguiente eclipse solar
+
+```{r}
+start = make_datetime(day=21, month=8, year=2017, hour=18, min=26, sec=40)
+start
+
+synodic_month = days(29) + hours(12) + minutes(44) + seconds(3)
+synodic_month
+
+saros = 223 * synodic_month
+saros
+
+next_solar_eclipe= start + saros
+print("Next solar eclipse:")
+next_solar_eclipe
+```
+
+### Sección 2: Agrupaciones y operaciones por fechas 
+Utilizando la data adjunta “data.xlsx” y el paquete “Lubridate”, responda a las siguientes preguntas:
+```{r}
+
+data <- read_xlsx("/Users/sophiagamarro/Desktop/data.xlsx")
+a <- dmy(data$`Fecha Creación`)
+b <- as.Date(as.integer(data$`Fecha Creación`), origin = "1900-01-01") - days(2)
+a[is.na(a)] <- b[!is.na(b)] 
+data$`Fecha Creación` <- a 
+a <- dmy(data$`Fecha Final`)
+b <- as.Date(as.integer(data$`Fecha Final`), origin = "1900-01-01") - days(2)
+a[is.na(a)] <- b[!is.na(b)] 
+data$`Fecha Final` <- a 
+```
+
+1.	¿En qué meses existe una mayor cantidad de llamadas por código?
+```{r}
+mayor_cantidad_llamadas <- data %>%group_by(Cod, month(`Fecha Creación`)) %>%count()
+mayor_cantidad_llamadas[which.max(mayor_cantidad_llamadas$n),]
+```
+
+2. ¿Qué día de la semana es el más ocupado?
+```{r}
+dia_ocupado <- data %>%group_by(day(`Fecha Creación`)) %>%count()
+dia_ocupado[which.max(dia_ocupado$n),]
+```
+
+3.	¿Qué mes es el más ocupado?
+```{r}
+mes <- data %>% group_by(month(`Fecha Creación`)) %>% tally() %>% arrange(desc(n))
+mes
+```
+
+
+5.	¿Cuántos minutos dura la llamada promedio?
+```{r}
+data <- data %>%mutate(duracion = difftime(`Hora Final`, `Hora Creación`))
+a<-mean(data$duracion)
+paste("duración de llamada promedio: ", round(a/60,2),  " minutos")
+```
+
+6.	Realice una tabla de frecuencias con el tiempo de llamada.
+```{r}
+tabla_freq <- as.data.frame(as.duration(data$duracion))
+header <- c('duracion por llamada')
+colnames(tabla_freq) <- header
+tabla_freq
+```
+
+### Sección 3: Signo Zodiacal 
+Realice una función que reciba como input su fecha de nacimiento y devuelva como output su signo zodiacal.
+```{r}
+ signo_zodiacal <- function() {
+  fecha_nacimiento <- readline(prompt="ingresar fecha de nacimiento (DD-MM-YYYY): ")
+  fecha <- dmy(fecha_nacimiento)
+  zodiaco <- Zodiac(fecha)
+  print(zodiaco)
+}
+signo_zodiacal()
+```
+
+### Sección 4: Flights 
+Utilizando la tabla de flights vista en clase, responda lo siguiente:
+
+dep_time, arr_time, sched_dep_time,sched_arr_time son variables que representan la hora de salida de los aviones. Sin embargo, están en formato numérico. Es decir, si una de las observaciones tiene 845 en sched_dep_time y 932 en sched_arr_time significa que tenia como hora de salida las 8:45 y llegada las 9:32. 
+
+
+```{r}
+flights <- flights %>% filter(!is.na(dep_time), !is.na(arr_time))
+
+nuevas_columnas <- flights %>% mutate(
+    departure_time = ymd_hm(paste(year, month, day, dep_time %/% 100, ':', dep_time %% 100)),
+    sched_departure = ymd_hm(paste(year, month, day, sched_dep_time  %/% 100, ':', sched_dep_time  %% 100)),
+    arrival_time = ymd_hm(paste(year, month, day, arr_time  %/% 100, ':', arr_time  %% 100)),
+    sched_arrival= ymd_hm(paste(year, month, day, sched_arr_time  %/% 100, ':', sched_arr_time  %% 100)),
+  )
+
+flight_delays <- flights %>% select(flight, dep_delay, arr_delay) %>% mutate(delay=minutes(dep_delay+arr_delay)) %>% 
+select(flight,delay)
+
+head(flight_delays)
+
+```
+
+
+
