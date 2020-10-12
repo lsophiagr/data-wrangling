@@ -15,7 +15,7 @@ library(tidyverse)
 library(reshape2)
 library(readr)
 
-coul <- brewer.pal(5, "Set2") 
+coul <- brewer.pal(5, "Spectral") 
 ```
 
 ## LABORATORIO 7
@@ -89,7 +89,7 @@ data %>% select(Cod) %>%distinct
 - En la tabla anterior es posible observar los servicios que son proporcionados a los postes. 
 ## Transporte utilizado
 ```{r}
-data %>% select(transporte) %>%distinct
+data %>% count(transporte) %>%distinct
 ```
 - Existen 3 tipos de transportes que pueden ser utilizados para movilizarse hacia el poste que necesita servicio. Estos son: 
     -Moto
@@ -103,6 +103,8 @@ data %>% select(origen) %>%distinct
 
 ## Pregunta 1: Estado de Resultados Breve 2017
 ```{r}
+
+
 ventas_totales <- sum(data$factura)
 sprintf("Ventas Netas: %.2f", ventas_totales)
 costos <- sum(data$costo_total)
@@ -141,10 +143,10 @@ reparaciones_mes
 ```
 
 ```{r}
-barplot(reparaciones_mes$total, names.arg = reparaciones_mes$reparaciones_mes, las=2, main="Reparaciones y/o Servicios por mes",  col=coul)
+barplot(reparaciones_mes$total, names.arg = reparaciones_mes$reparaciones_mes, las=2, main="Reparaciones y/o Servicios por mes",  col="#38A897", xlab="mes", ylab = "servicios efectuados")
 ```
 
--En la gráfica anterior es posible observar como  el volumen de reparaciones y/o servicios por mes se mantuvo constante, lo cual es un indicador de que los clientes sí se mantienen satisfechos con las tarifas. 
+-En la gráfica anterior es posible observar como  el volumen de reparaciones y/o servicios por mes se mantuvo constante, lo cual es un indicador de que los clientes sí se mantienen satisfechos con las tarifas. También es posible observar que en el mes de febrero hubo una pequeña disminución en el numero de servicios brindados.  
 
 ## Pregunta 4: ¿Cuándo podríamos perderle a un mantenimiento y/o reparación?
 ```{r}
@@ -167,7 +169,7 @@ colnames(distribucion)<-c('origen', 'Servicios')
 distribucion$Servicios <- (distribucion$Servicios)/1000
 ```
 ```{r}
-barplot(distribucion$Servicios, names.arg = distribucion$origen, las=2, main="Viajes por sede (millas)",  col=coul )
+barplot(distribucion$Servicios, names.arg = distribucion$origen, las=2, main="Viajes por centro de distribución (miles)",  col="#75A28A" )
 ```
 
 -Como se puede observar en la gráfica, las sedes 150224 y 150277 realizan una cantidad de servicios mucho más alta que las demás, por lo que sí sería adecuado abrir otra  para que sea posible alivianar un poco la carga de las sedes mencionadas.  
@@ -185,8 +187,36 @@ mantenimiento<- data %>%group_by(Cod) %>%summarise(Total = sum(factura)/1000)
 mantenimiento <- mantenimiento[order(-mantenimiento$Total),]
 ```
 ```{r}
-barplot(mantenimiento$Total, names.arg = mantenimiento$Cod, las=2, main="80-20 Postes por servicio (millas)", cex.names = 0.6, ylim = c(0,15000),  col=coul )
+barplot(mantenimiento$Total, names.arg = mantenimiento$Cod, las=2, main="80-20 Postes por servicio (miles)", cex.names = 0.6, ylim = c(0,15000),  col="#75A28A", ylab= "cantidad (miles)")
 ```
 
 -Se buscó una manera eficiente de agrupar los datos por tipo de servicio brindado. Es posible observar en la gráfia que el servicio que más ingresos representa el es servicio de "revisión", seguido de "verificación de medidores". 
+
+
+```{r}
+data <- data %>% 
+  group_by(rangos)
+
+
+efectividad <- data  %>% summarise(
+  n_servicios = length(ID),
+  costo_total = sum(costo_total),
+  ingreso = sum(factura),
+  ganancia = (sum(factura) - sum(costo_total))) %>%
+  arrange(desc(ganancia))
+
+
+```
+
+```{r}
+efectividad
+```
+
+En la tabla anterior se puede observar más detalladamente la cantidad de servicios que se brindan en el intervalo de tiempo que mas ganancias representa, así como tambiénn el costo total que representan. 
+```{r}
+barplot(efectividad$n_servicios, names.arg = efectividad$rangos, main="Cantidad de Viajes por Tiempo", cex.names = 0.7, col="#75A28A", xlab= "tiempo", ylab= "viajes (miles)")
+```
+
+
+Es posible identificar que los viajes más rentables son aquellos que se encuentran en un rango de 75-120 minutos. 
 

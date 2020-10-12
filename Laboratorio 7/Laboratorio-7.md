@@ -147,13 +147,15 @@ data %>% select(Cod) %>%distinct
 <!-- end list -->
 
 ``` r
-data %>% select(transporte) %>%distinct
+data %>% count(transporte) %>%distinct
 ```
 
-    ##   transporte
-    ## 1   Camion_5
-    ## 2     Pickup
-    ## 3       Moto
+    ## # A tibble: 3 x 2
+    ##   transporte      n
+    ##   <chr>       <int>
+    ## 1 Camion_5    62267
+    ## 2 Moto         5725
+    ## 3 Pickup     195733
 
   - Existen 3 tipos de transportes que pueden ser utilizados para
     movilizarse hacia el poste que necesita servicio. Estos son: -Moto
@@ -268,7 +270,7 @@ reparaciones_mes
     ## 12               12 22403
 
 ``` r
-barplot(reparaciones_mes$total, names.arg = reparaciones_mes$reparaciones_mes, las=2, main="Reparaciones y/o Servicios por mes",  col=coul)
+barplot(reparaciones_mes$total, names.arg = reparaciones_mes$reparaciones_mes, las=2, main="Reparaciones y/o Servicios por mes",  col="#38A897", xlab="mes", ylab = "servicios efectuados")
 ```
 
 ![](Laboratorio-7_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
@@ -276,7 +278,9 @@ barplot(reparaciones_mes$total, names.arg = reparaciones_mes$reparaciones_mes, l
 \-En la gráfica anterior es posible observar como el volumen de
 reparaciones y/o servicios por mes se mantuvo constante, lo cual es un
 indicador de que los clientes sí se mantienen satisfechos con las
-tarifas.
+tarifas. También es posible observar que en el mes de febrero hubo una
+pequeña disminución en el numero de servicios
+brindados.
 
 ## Pregunta 4: ¿Cuándo podríamos perderle a un mantenimiento y/o reparación?
 
@@ -317,7 +321,7 @@ distribucion$Servicios <- (distribucion$Servicios)/1000
 ```
 
 ``` r
-barplot(distribucion$Servicios, names.arg = distribucion$origen, las=2, main="Viajes por sede (millas)",  col=coul )
+barplot(distribucion$Servicios, names.arg = distribucion$origen, las=2, main="Viajes por centro de distribución (miles)",  col="#75A28A" )
 ```
 
 ![](Laboratorio-7_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
@@ -347,7 +351,7 @@ mantenimiento <- mantenimiento[order(-mantenimiento$Total),]
 ```
 
 ``` r
-barplot(mantenimiento$Total, names.arg = mantenimiento$Cod, las=2, main="80-20 Postes por servicio (millas)", cex.names = 0.6, ylim = c(0,15000),  col=coul )
+barplot(mantenimiento$Total, names.arg = mantenimiento$Cod, las=2, main="80-20 Postes por servicio (miles)", cex.names = 0.6, ylim = c(0,15000),  col="#75A28A", ylab= "cantidad (miles)")
 ```
 
 ![](Laboratorio-7_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
@@ -356,3 +360,43 @@ barplot(mantenimiento$Total, names.arg = mantenimiento$Cod, las=2, main="80-20 P
 servicio brindado. Es posible observar en la gráfia que el servicio que
 más ingresos representa el es servicio de “revisión”, seguido de
 “verificación de medidores”.
+
+``` r
+data <- data %>% 
+  group_by(rangos)
+
+
+efectividad <- data  %>% summarise(
+  n_servicios = length(ID),
+  costo_total = sum(costo_total),
+  ingreso = sum(factura),
+  ganancia = (sum(factura) - sum(costo_total))) %>%
+  arrange(desc(ganancia))
+```
+
+``` r
+efectividad
+```
+
+    ## # A tibble: 5 x 5
+    ##   rangos  n_servicios costo_total   ingreso ganancia
+    ##   <chr>         <int>       <dbl>     <dbl>    <dbl>
+    ## 1 X75.120      110764   13971119. 17577215. 3606096.
+    ## 2 X30.45        52745    3616012.  5257839. 1641827 
+    ## 3 X5.30         39559    1630675.  2841311. 1210636.
+    ## 4 X45.75        34284    2990823.  4067009. 1076186 
+    ## 5 X120.         26373    5965390.  6944722.  979332
+
+En la tabla anterior se puede observar más detalladamente la cantidad de
+servicios que se brindan en el intervalo de tiempo que mas ganancias
+representa, así como tambiénn el costo total que
+representan.
+
+``` r
+barplot(efectividad$n_servicios, names.arg = efectividad$rangos, main="Cantidad de Viajes por Tiempo", cex.names = 0.7, col="#75A28A", xlab= "tiempo", ylab= "viajes (miles)")
+```
+
+![](Laboratorio-7_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
+Es posible identificar que los viajes más rentables son aquellos que se
+encuentran en un rango de 75-120 minutos.
